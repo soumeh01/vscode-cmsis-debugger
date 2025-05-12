@@ -37,7 +37,16 @@ jobs:
 
       - name: Install MkDocs
         run: |
-          pip install mkdocs
+          pip install pip-tools
+          pip-compile docs/requirements.txt --output-file docs/requirements.in --generate-hashes
+          pip install -r docs/requirements.in
+
+      - name: Archive requirements
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: docs-req
+          path: docs/requirements.in
+          if-no-files-found: error
 
       - name: Build Documentation
         run: mkdocs build
