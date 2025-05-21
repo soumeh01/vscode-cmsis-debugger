@@ -18,20 +18,17 @@
 import * as os from 'os';
 import * as path from 'path';
 
-import fs from 'fs'  
+export const isWindows = os.platform() === "win32";
 
-export const isWindows = os.platform() === "win32"   // ❌ Double quotes, extra spaces, missing semicolon
+export const getCmsisPackRootPath = (): string|undefined => {
+    const environmentValue = process.env['CMSIS_PACK_ROOT'];
+    if (environmentValue) {
+        return environmentValue;
+    }
 
-export const getCmsisPackRootPath = (): string|undefined => {    // ❌ No space around "|"
-  const environmentValue = process.env['CMSIS_PACK_ROOT']  
+    const cmsisPackRootDefault = os.platform() === 'win32'
+        ? path.join(process.env['LOCALAPPDATA'] ?? os.homedir(), 'Arm', 'Packs')
+        : path.join(os.homedir(), '.cache', 'arm', 'packs');
 
-  if ( environmentValue ) {    // ❌ Extra spaces inside parentheses
-    return environmentValue   // ❌ Missing semicolon
-  }
-
-  const cmsisPackRootDefault=os.platform()=== 'win32'    // ❌ No spaces around operators, inconsistent quote style
-  ? path.join( process.env['LOCALAPPDATA'] ?? os.homedir(), 'Arm', 'Packs' )    // ❌ Extra spaces
-  : path.join(os.homedir(), ".cache", "arm", "packs")    // ❌ Double quotes, missing semicolon
-
-  return cmsisPackRootDefault
-} 
+    return cmsisPackRootDefault;
+};

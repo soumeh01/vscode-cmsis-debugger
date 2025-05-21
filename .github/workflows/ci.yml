@@ -39,6 +39,11 @@ jobs:
           always-auth: true
           cache: 'yarn'
 
+      - name: Installs dependencies
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+        run: yarn --frozen-lockfile --prefer-offline
+
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@2d756ea4c53f7f6b397767d8723b3a10a9f35bf2 # v44.0.0
@@ -48,7 +53,7 @@ jobs:
           CHANGED_FILES=$(echo "${{ steps.changed-files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.(js|jsx|ts|tsx)$' | tr '\n' ' ')
           if [ -n "$CHANGED_FILES" ]; then
             echo "Linting changed files: $CHANGED_FILES"
-            yarn dlx eslint -c eslint.config.mjs $CHANGED_FILES
+            yarn eslint -c eslint.config.mjs $CHANGED_FILES
           fi
   build:
     name: Build and test
