@@ -20,6 +20,53 @@ permissions:
   contents: read
 
 jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version-file: package.json
+          registry-url: https://npm.pkg.github.com
+          always-auth: true
+          cache: 'yarn'
+
+      - name: Installs dependencies
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+        run: yarn --frozen-lockfile --prefer-offline
+
+      - name: Run tests with coverage
+        run: yarn test
+
+      - name: Upload coverage report as artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: coverage-report
+          path: coverage
+
+      - name: Fail if coverage drops below threshold
+        run: |
+          THRESHOLD=80
+          COVERAGE=$(awk '/<h1>All files<\/h1>/ {found=1} found && /<span class="strong">/ {gsub(/[^0-9.]/,""); print; exit}' coverage/lcov-report/index.html)
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "❌ Coverage $COVERAGE% is below threshold ($THRESHOLD%)"
+            exit 1
+          else
+            echo "✅ Coverage $COVERAGE% meets threshold ($THRESHOLD%)"
+          fi
+        continue-on-error: true
+
   build:
     name: Build and test
     runs-on: [ubuntu-latest]
