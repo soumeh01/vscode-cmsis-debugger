@@ -49,10 +49,6 @@ name = "checkov"
 version = "3.2.49"
 
 [[plugin]]
-name = "markdownlint"
-version = "0.31.1"
-
-[[plugin]]
 name = "osv-scanner"
 
 [[plugin]]
