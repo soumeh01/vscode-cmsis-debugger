@@ -1,0 +1,72 @@
+config_version = "0"
+
+exclude_patterns = [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**"
+]
+
+test_patterns = [
+    "**/*.test.ts"
+]
+
+[smells]
+mode = "comment"
+
+[[source]]
+name = "default"
+default = true
+
+[smells.boolean_logic]
+enabled = true
+
+[smells.similar_code]
+enabled = true
+
+[smells.identical_code]
+enabled = true
+
+[smells.function_parameters]
+enabled = true
+
+[smells.nested_control_flow]
+enabled = false
+
+[smells.file_complexity]
+enabled = false
+
+[smells.function_complexity]
+enabled = false
+
+[smells.return_statements]
+enabled = false
+
+[[plugin]]
+name = "actionlint"
+
+[[plugin]]
+name = "checkov"
+version = "3.2.49"
+
+[[plugin]]
+name = "markdownlint"
+version = "0.31.1"
+
+[[plugin]]
+name = "osv-scanner"
+
+[[plugin]]
+name = "prettier"
+version = "2.8.4"
+
+[[plugin]]
+name = "ripgrep"
+
+[[plugin]]
+name = "trivy"
+
+[[plugin]]
+name = "trufflehog"
+
+[[plugin]]
+name = "yamllint"
