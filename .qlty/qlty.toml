@@ -1,0 +1,43 @@
+# qlty.toml
+
+[general]
+project_name = "vscode-cmsis-debugger"
+language = "typescript"
+ci_provider = "github"
+
+[checks]
+# Enable or disable individual checks
+enable_lint = true
+enable_tests = true
+enable_coverage = true
+enable_security_scan = true
+enable_dependency_check = true
+
+[lint]
+tool = "eslint"
+config_file = "eslint.config.mjs"
+fail_on_warning = false
+
+[tests]
+framework = "jest"
+min_pass_rate = 1.0
+
+[coverage]
+tool = "jest"
+min_coverage = 85
+report_format = "lcov"
+
+[security_scan]
+tool = "npm-audit"
+severity_threshold = "high"
+
+[dependency_check]
+tool = "npm-check-updates"
+ignore = []
+
+[exclusions]
+paths = [
+  "dist/",
+  "node_modules/",
+  "coverage"
+]

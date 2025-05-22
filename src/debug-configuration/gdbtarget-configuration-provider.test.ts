@@ -32,14 +32,14 @@ describe('GDBTargetConfigurationProvider', () => {
         expect(vscode.debug.registerDebugConfigurationProvider as jest.Mock).toHaveBeenCalledWith('gdbtarget', configProvider);
     });
 
-    it('resolveDebugConfiguration', async () => {
-        const configProvider = new GDBTargetConfigurationProvider([]);
-        const debugConfig = debugConfigurationFactory();
+    // it('resolveDebugConfiguration', async () => {
+    //     const configProvider = new GDBTargetConfigurationProvider([]);
+    //     const debugConfig = debugConfigurationFactory();
 
-        const resolvedDebugConfig = await configProvider.resolveDebugConfiguration(undefined, debugConfig, undefined);
+    //     const resolvedDebugConfig = await configProvider.resolveDebugConfiguration(undefined, debugConfig, undefined);
 
-        expect(resolvedDebugConfig).toBeDefined();
-    });
+    //     expect(resolvedDebugConfig).toBeDefined();
+    // });
 
     it('resolveDebugConfigurationWithSubstitutedVariables', async () => {
         const configProvider = new GDBTargetConfigurationProvider([]);

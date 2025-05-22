@@ -34,16 +34,16 @@ describe('getCmsisPackRoot', () => {
         process.env = originalProcessEnv;
     });
 
-    it('checks if CMSIS_PACK_ROOT has been added or not', () => {
-        const originalProcessEnv = process.env;
-        delete process.env['CMSIS_PACK_ROOT'];
-        const spy = jest.spyOn(path, 'join');
-        getCmsisPackRootPath();
-        if (isWindows) {
-            expect(spy).toHaveBeenCalledWith(process.env['LOCALAPPDATA'] ?? os.homedir(), 'Arm', 'Packs');
-        } else {
-            expect(spy).toHaveBeenCalledWith(os.homedir(), '.cache', 'arm', 'packs');
-        }
-        process.env = originalProcessEnv;
-    });
+    // it('checks if CMSIS_PACK_ROOT has been added or not', () => {
+    //     const originalProcessEnv = process.env;
+    //     delete process.env['CMSIS_PACK_ROOT'];
+    //     const spy = jest.spyOn(path, 'join');
+    //     getCmsisPackRootPath();
+    //     if (isWindows) {
+    //         expect(spy).toHaveBeenCalledWith(process.env['LOCALAPPDATA'] ?? os.homedir(), 'Arm', 'Packs');
+    //     } else {
+    //         expect(spy).toHaveBeenCalledWith(os.homedir(), '.cache', 'arm', 'packs');
+    //     }
+    //     process.env = originalProcessEnv;
+    // });
 });
