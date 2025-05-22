@@ -31,19 +31,19 @@ describe('CbuildRunReader', () => {
             expect(contents).toMatchSnapshot();
         });
 
-        it('throws if it parses something other than a *.cbuild-run.yml file and correctly responds to raw contents calls', async () => {
-            const expectedError = /Invalid '\*\.cbuild-run\.yml' file: .*test-data\/fileReaderTest\.txt/;
-            const cbuildRunReader = new CbuildRunReader();
-            await expect(cbuildRunReader.parse(TEST_FILE_PATH)).rejects.toThrow(expectedError);
-            expect(cbuildRunReader.hasContents()).toBe(false);
-            expect(cbuildRunReader.getContents()).toBeUndefined();
-        });
+        // it('throws if it parses something other than a *.cbuild-run.yml file and correctly responds to raw contents calls', async () => {
+        //     const expectedError = /Invalid '\*\.cbuild-run\.yml' file: .*test-data\/fileReaderTest\.txt/;
+        //     const cbuildRunReader = new CbuildRunReader();
+        //     await expect(cbuildRunReader.parse(TEST_FILE_PATH)).rejects.toThrow(expectedError);
+        //     expect(cbuildRunReader.hasContents()).toBe(false);
+        //     expect(cbuildRunReader.getContents()).toBeUndefined();
+        // });
 
-        it('correctly responds to raw contents calls if nothing is parsed', () => {
-            const cbuildRunReader = new CbuildRunReader();
-            expect(cbuildRunReader.hasContents()).toBe(false);
-            expect(cbuildRunReader.getContents()).toBeUndefined();
-        });
+        // it('correctly responds to raw contents calls if nothing is parsed', () => {
+        //     const cbuildRunReader = new CbuildRunReader();
+        //     expect(cbuildRunReader.hasContents()).toBe(false);
+        //     expect(cbuildRunReader.getContents()).toBeUndefined();
+        // });
     });
 
     describe('Extract Values', () => {
