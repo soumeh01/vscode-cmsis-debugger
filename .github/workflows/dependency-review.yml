@@ -6,6 +6,7 @@ permissions:
 
 jobs:
   dependency-review:
+    if: github.repository_owner == 'Open-CMSIS-Pack'
     runs-on: ubuntu-latest
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -15,5 +16,6 @@ jobs:
 
       - name: 'Checkout Repository'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
       - name: 'Dependency Review'
         uses: actions/dependency-review-action@da24556b548a50705dd671f47852072ea4c105d9 # v4.7.1

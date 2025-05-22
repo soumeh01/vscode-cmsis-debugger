@@ -68,7 +68,6 @@ jobs:
 
       - name: Remove Badges for dist
         run: |
-          sed -i "/https:\/\/codeclimate\.com\/github\/Open\-CMSIS\-Pack\/vscode\-cmsis\-debugger/d" README.md
           sed -i "/https:\/\/securityscorecards\.dev\/viewer/d" README.md
 
       - name: Build
@@ -101,14 +100,23 @@ jobs:
           git commit -m "Update CHANGELOG.md after release [skip ci]"
           git push
 
-      - name: Publish coverage report to Code Climate
-        if: github.repository_owner == 'Open-CMSIS-Pack'
-        uses: paambaati/codeclimate-action@f429536ee076d758a24705203199548125a28ca7 # v9.0.0
+      - name: Fail if coverage drops below threshold
+        run: |
+          THRESHOLD=80
+          COVERAGE=$(awk '/<h1>All files<\/h1>/ {found=1} found && /<span class="strong">/ {gsub(/[^0-9.]/,""); print; exit}' coverage/lcov-report/index.html)
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "❌ Coverage $COVERAGE% is below threshold ($THRESHOLD%)"
+            exit 1
+          else
+            echo "✅ Coverage $COVERAGE% meets threshold ($THRESHOLD%)"
+          fi
+
+      - uses: qltysh/qlty-action/coverage@v1
         env:
-          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+          QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}
         with:
-          debug: true
-          coverageLocations: coverage/lcov.info:lcov
+          files: coverage/lcov.info
 
   package:
     name: Package
