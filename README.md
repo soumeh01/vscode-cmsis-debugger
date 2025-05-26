@@ -1,4 +1,6 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Open-CMSIS-Pack/vscode-cmsis-debugger/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Open-CMSIS-Pack/vscode-cmsis-debugger)
+[![Maintainability](https://qlty.sh/badges/5b10db84-211e-4728-9f04-3b5c2cf46f4d/maintainability.svg)](https://qlty.sh/gh/soumeh01/projects/vscode-cmsis-debugger)
+[![Test Coverage](https://qlty.sh/badges/5b10db84-211e-4728-9f04-3b5c2cf46f4d/test_coverage.svg)](https://qlty.sh/gh/soumeh01/projects/vscode-cmsis-debugger)
 
 # Arm CMSIS Debugger
 
