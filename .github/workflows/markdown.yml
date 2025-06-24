@@ -54,9 +54,9 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Check Links
-        uses: gaurav-nelson/github-action-markdown-link-check@3c3b66f1f7d0900e37b71eca45b63ea9eedfce31 # master
+        uses: lycheeverse/lychee-action@v2   # pin to a tag or SHA in prod
         with:
-          use-quiet-mode: 'yes'
-          use-verbose-mode: 'yes'
-          base-branch: ${{ github.base_ref }}
-          config-file: '.github/markdown-link-check.jsonc'
+          # Recursively scan every *.md file, show each link it checks
+          args: --base . --verbose --no-progress "./**/*.md"
+          jobSummary: true           # include a nice table in the run log
+          fail: true                 # fail pipeline on broken links
