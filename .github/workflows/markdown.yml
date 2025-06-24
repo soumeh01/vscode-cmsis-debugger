@@ -57,6 +57,10 @@ jobs:
         uses: lycheeverse/lychee-action@82202e5e9c2f4ef1a55a3d02563e1cb6041e5332 # v2.4.1
         with:
           # Recursively scan every *.md file, show each link it checks
-          args: --base . --verbose --no-progress "./**/*.md"
+          args: >
+            --verbose
+            --no-progress
+            --check
+            "./**/*.md"
           jobSummary: true           # include a nice table in the run log
           fail: true                 # fail pipeline on broken links
