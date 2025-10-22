@@ -1,0 +1,171 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/use-common.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/use-common.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    uses: soumeh01/test_ts_app/.github/workflows/build-and-verify.yml@itr5
+    with:
+      build-matrix: '[{"platform":"windows-2022","arch":"amd64"},{"platform":"ubuntu-24.04","arch":"amd64"},{"platform":"macOS-14","arch":"arm64"}]'
+      test-matrix: '[{"platform":"windows-2022","arch":"amd64"},{"platform":"ubuntu-24.04","arch":"amd64"},{"platform":"macOS-14","arch":"arm64"}]'
+      package-manager: yarn
+      node-version-file: 'package.json'
+      build-command: 'build:no-lint'
+      test-command: 'test'
+      lint-command: 'lint'
+
+  tpip-report:
+    uses: soumeh01/test_ts_app/.github/workflows/tpip.yml@itr5
+    with:
+      package-manager: yarn
+      node-version-file: 'package.json'
+      tpip-header-file: 'docs/tpip-header.md'
+      tpip-json-file: 'docs/third-party-licenses.json'
+
+  # build:
+  #   strategy:
+  #     matrix:
+  #       platform: [ubuntu-24.04, windows-2022, macos-14]
+  #       include:
+  #         - platform: ubuntu-24.04
+  #           target: linux
+  #         - platform: windows-2022
+  #           target: windows
+  #         - platform: macos-14
+  #           target: darwin
+  #   runs-on: ${{ matrix.platform }}
+  #   permissions:
+  #     packages: read
+  #   name: 'Build and test (${{ matrix.target }})'
+
+  #   steps:
+  #     - name: Harden the runner (Audit all outbound calls)
+  #       uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+  #       with:
+  #         egress-policy: audit
+
+  #     - run: git config --global core.autocrlf false
+  #     - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+  #       with:
+  #         fetch-depth: 0
+  #         submodules: true
+
+  #     - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         node-version-file: package.json
+  #         registry-url: https://npm.pkg.github.com
+  #         always-auth: true
+  #         package-manager-cache: false
+
+  #     - name: Set version
+  #       if: runner.os == 'Linux' && github.repository_owner == 'Open-CMSIS-Pack'
+  #       run: |
+  #         case ${{ github.event_name }} in
+  #           release)
+  #             TAG="${{ github.event.release.tag_name }}"
+  #             yarn version --no-git-tag-version --new-version "${TAG#v}"
+  #             ;;
+  #           pull_request)
+  #             DESCRIBE=$(git describe --tags | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+')
+  #             QUALIFIER=$(git describe --tags | grep -Eo '\-g[0-9a-f]+$')
+  #             yarn version -s --no-git-tag-version --new-version "${DESCRIBE#v}"
+  #             yarn version --no-git-tag-version --prepatch --preid "pr${{ github.event.number }}${QUALIFIER}"
+  #             ;;
+  #           *)
+  #             DESCRIBE=$(git describe --tags | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+')
+  #             QUALIFIER=$(git describe --tags | grep -Eo '[0-9]+\-g[0-9a-f]+$')
+  #             yarn version -s --no-git-tag-version --new-version "${DESCRIBE#v}"
+  #             yarn version --no-git-tag-version --prepatch --preid "${{ github.ref_name }}${QUALIFIER}"
+  #             ;;
+  #         esac
+  #         VERSION="$(jq -r ".version" < package.json)"
+  #         sed -i "s/## Unreleased/## ${VERSION}/" CHANGELOG.md
+  #         echo "Version is ${VERSION}"
+
+  #     - name: Remove badges
+  #       if: runner.os == 'Linux'
+  #       run: |
+  #         sed -i "/https:\/\/qlty\.sh\/gh/d" README.md
+  #         sed -i "/https:\/\/securityscorecards\.dev\/viewer/d" README.md
+
+  #     - name: Install dependencies
+  #       env:
+  #         GITHUB_TOKEN: ${{ github.token }}
+  #       run: yarn --frozen-lockfile --prefer-offline --ignore-scripts
+
+  #     - name: Build on Windows or macOS
+  #       if: runner.os != 'Linux'
+  #       run: yarn build:no-lint
+
+  #     - name: Build on Linux
+  #       if: runner.os == 'Linux'
+  #       run: yarn build
+
+  #     - name: Check copyright
+  #       run: yarn copyright:check
+
+  #     - name: Test
+  #       run: yarn test
+
+  #     - name: Upload dist
+  #       if: runner.os == 'Linux'
+  #       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: dist
+  #         path: |
+  #           ./README.md
+  #           ./CHANGELOG.md
+  #           ./package.json
+  #           ./dist
+  #         retention-days: 1
+
+  #     - name: Commit changelog
+  #       if: false && github.event_name == 'release' && runner.os == 'Linux'
+  #       run: |
+  #         sed -i '3i ## Unreleased\n' CHANGELOG.md
+  #         git checkout main
+  #         git config user.name github-actions
+  #         git config user.email git@github.com
+  #         git add CHANGELOG.md
+  #         git commit -m "Update CHANGELOG.md after release [skip ci]"
+  #         git push
+
+  #     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       if: runner.os == 'Linux'
+  #       with:
+  #         name: test-coverage
+  #         path: ./coverage
+
+  #     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+  #       with:
+  #         name: test-report-${{ matrix.target }}
+  #         path: ./test-report.html
+
+  #     - name: Publish coverage report to QLTY
+  #       if: github.repository_owner == 'Open-CMSIS-Pack' && runner.os == 'Linux'
+  #       uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899 # v1
+  #       with:
+  #         token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+  #         files: coverage/lcov.info
