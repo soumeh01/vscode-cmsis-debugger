@@ -1,12 +1,6 @@
 name: Markdown
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/markdown.yml'
-      - '.github/markdownlint.json'
-      - '.github/markdownlint.jsonc'
-      - '**/*.md'
   workflow_dispatch:
 
 concurrency:

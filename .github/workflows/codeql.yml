@@ -1,22 +1,7 @@
 name: CodeQL
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '.github/workflows/markdown.yml'
-      - '.github/markdownlint.json'
-      - '.github/markdownlint.jsonc'
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**/*.md'
-      - '.github/workflows/markdown.yml'
-      - '.github/markdownlint.json'
-      - '.github/markdownlint.jsonc'
+  workflow_dispatch:
 
 permissions:
   contents: read

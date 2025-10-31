@@ -1387,18 +1387,6 @@
   resolved "https://registry.yarnpkg.com/@oozcitak/util/-/util-8.3.8.tgz#10f65fe1891fd8cde4957360835e78fd1936bfdd"
   integrity sha512-T8TbSnGsxo6TDBJx/Sgv/BlVJL3tshxZP7Aq5R1mSnM5OcHY2dQaxLMu2+E8u3gN0MLOzdjurqN4ZRVuzQycOQ==
 
-"@open-cmsis-pack/vsce-helper@^0.1.1":
-  version "0.1.1"
-  resolved "https://npm.pkg.github.com/download/@open-cmsis-pack/vsce-helper/0.1.1/d66affac5e482c9721c14eadcd57a4190d68b124#d66affac5e482c9721c14eadcd57a4190d68b124"
-  integrity sha512-KzFTeqGMhIo6lH4ZuWsDztA/GB+egR604/inJWHysbSHdEaNM0/zytUPNxZCPxH9CC7mu7yVgkPF4YY5HNw42w==
-  dependencies:
-    fast-extract "^1.7.2"
-    node-fetch "^3.3.2"
-    octokit "^5.0.3"
-    tempfile "^5.0.0"
-    type-fest "^4.41.0"
-    yargs "^18.0.0"
-
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"

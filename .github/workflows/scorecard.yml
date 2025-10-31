@@ -1,20 +1,6 @@
 name: Scorecard security
 on:
   workflow_dispatch:
-  # For Branch-Protection check. Only the default branch is supported. See
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
-  branch_protection_rule:
-  # To guarantee Maintained check is occasionally updated. See
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
-  schedule:
-    - cron: '0 0 * * *'
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - '**/*.md'
-      - '.github/workflows/markdown.yml'
-      - '.github/markdownlint.json'
-      - '.github/markdownlint.jsonc'
 
 permissions:
   contents: read
