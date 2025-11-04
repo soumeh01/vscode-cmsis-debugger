@@ -73,19 +73,19 @@ jobs:
           case ${{ github.event_name }} in
             release)
               TAG="${{ github.event.release.tag_name }}"
-              yarn version --no-git-tag-version --new-version "${TAG#v}"
+              npm version --no-git-tag-version --new-version "${TAG#v}"
               ;;
             pull_request)
               DESCRIBE=$(git describe --tags | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+')
               QUALIFIER=$(git describe --tags | grep -Eo '\-g[0-9a-f]+$')
-              yarn version -s --no-git-tag-version --new-version "${DESCRIBE#v}"
-              yarn version --no-git-tag-version --prepatch --preid "pr${{ github.event.number }}${QUALIFIER}"
+              npm version -s --no-git-tag-version --new-version "${DESCRIBE#v}"
+              npm version --no-git-tag-version --prepatch --preid "pr${{ github.event.number }}${QUALIFIER}"
               ;;
             *)
               DESCRIBE=$(git describe --tags | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+')
               QUALIFIER=$(git describe --tags | grep -Eo '[0-9]+\-g[0-9a-f]+$')
-              yarn version -s --no-git-tag-version --new-version "${DESCRIBE#v}"
-              yarn version --no-git-tag-version --prepatch --preid "${{ github.ref_name }}${QUALIFIER}"
+              npm version -s --no-git-tag-version --new-version "${DESCRIBE#v}"
+              npm version --no-git-tag-version --prepatch --preid "${{ github.ref_name }}${QUALIFIER}"
               ;;
           esac
           VERSION="$(jq -r ".version" < package.json)"
@@ -101,21 +101,21 @@ jobs:
       - name: Install dependencies
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: yarn --frozen-lockfile --prefer-offline --ignore-scripts
+        run: npm ci
 
       - name: Build on Windows or macOS
         if: runner.os != 'Linux'
-        run: yarn build:no-lint
+        run: npm run build:no-lint
 
       - name: Build on Linux
         if: runner.os == 'Linux'
-        run: yarn build
+        run: npm run build
 
       - name: Check copyright
-        run: yarn copyright:check
+        run: npm run copyright:check
 
       - name: Test
-        run: yarn test
+        run: npm run test
 
       - name: Upload dist
         if: runner.os == 'Linux'
@@ -198,12 +198,12 @@ jobs:
 
       - name: Download tools
         run: |
-          yarn --frozen-lockfile --ignore-scripts --prefer-offline
-          yarn download-tools --target ${{ matrix.target }} --no-cache
+          npm ci
+          npm run download-tools -- --target ${{ matrix.target }} --no-cache
 
       - name: Create vsix package
         run: |
-          yarn package --target ${{ matrix.target }}
+          npm run package -- --target ${{ matrix.target }}
 
       - name: Upload package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
