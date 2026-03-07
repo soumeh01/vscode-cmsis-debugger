@@ -16,18 +16,11 @@
  * limitations under the License.
  */
 
-import { ArchiveFileAsset, Downloadable, Downloader, GitHubReleaseAsset, GitHubWorkflowAsset, WebFileAsset  } from '@open-cmsis-pack/vsce-helper';
+import { ArchiveFileAsset, Downloadable, Downloader, GitHubReleaseAsset, GitHubWorkflowAsset, WebFileAsset  } from '@soumeh01/vsce-helper';
 import { PackageJson } from 'type-fest';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import process from 'node:process';
-// Temporary solution until we have fixed vsce-helper
-import extract from 'extract-zip';
-import { fileURLToPath } from 'node:url';
-import { dirname } from 'node:path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+type DownloadTarget = 'win32-x64' | 'win32-arm64' | 'linux-x64' | 'linux-arm64' | 'darwin-x64' | 'darwin-arm64';
 
 type CmsisPackageJson = PackageJson & {
     cmsis: {
@@ -48,26 +41,18 @@ function splitGitReference(reference: string, owner: string, repo: string) {
     return { repo, owner, reference };
 }
 
-// Temporary solution until we have fixed vsce-helper
-class ExtractZipArchiveFileAsset extends ArchiveFileAsset {
-    protected async extractArchive(archiveFile: string, dest?: string): Promise<string> {
-        const effDest = dest ?? path.join(__dirname, 'tools', 'pyocd');
-        await extract(archiveFile, { dir: effDest });
-        return effDest;
-    }
-}
-
 const pyocd : Downloadable = new Downloadable(
     'pyOCD', 'pyocd',
-    async (target) => {
-        const { os, arch } = {
+    async (target: DownloadTarget) => {
+        const pyocdTargets = {
             'win32-x64': { os: 'windows', arch: '' },
             'win32-arm64': { os: 'windows', arch: '' },
             'linux-x64': { os: 'linux', arch: '' },
             'linux-arm64': { os: 'linux', arch: '-arm64' },
             'darwin-x64': { os: 'macos', arch: '' },
             'darwin-arm64': { os: 'macos', arch: '' },
-        }[target];
+        } satisfies Record<DownloadTarget, { os: string, arch: string }>;
+        const { os, arch } = pyocdTargets[target];
         const json = await downloader.getPackageJson<CmsisPackageJson>();
         const reqVersion = json?.cmsis?.pyocd;
         if (reqVersion === undefined) {
@@ -80,32 +65,24 @@ const pyocd : Downloadable = new Downloadable(
             owner, repo, reference,
             `pyocd-${os}${arch}-${reference}.zip`, 
             { token: process.env.GITHUB_TOKEN });
-        const asset = new ExtractZipArchiveFileAsset(releaseAsset);
+        const asset = new ArchiveFileAsset(releaseAsset);
         return asset;
     },
 )
 
-// Temporary solution until we have fixed vsce-helper
-class ExtractZipGitHubWorkflowAsset extends GitHubWorkflowAsset {
-    protected async extractArchive(archiveFile: string, dest?: string): Promise<string> {
-        const effDest = dest ?? path.join(__dirname, 'tools', 'pyocd');
-        await extract(archiveFile, { dir: effDest });
-        return effDest;
-    }
-}
-
 
 const pyocdNightly : Downloadable = new Downloadable(
     'pyOCD', 'pyocd',
-    async (target) => {
-        const { os, arch } = {
+    async (target: DownloadTarget) => {
+        const pyocdNightlyTargets = {
             'win32-x64': { os: 'windows', arch: '' },
             'win32-arm64': { os: 'windows', arch: '' },
             'linux-x64': { os: 'linux', arch: '' },
             'linux-arm64': { os: 'linux', arch: '-arm64' },
             'darwin-x64': { os: 'macos', arch: '' },
             'darwin-arm64': { os: 'macos', arch: '' },
-        }[target];
+        } satisfies Record<DownloadTarget, { os: string, arch: string }>;
+        const { os, arch } = pyocdNightlyTargets[target];
         const json = await downloader.getPackageJson<CmsisPackageJson>();
         const workflow = json?.cmsis?.pyocdNightly;
         if (workflow === undefined) {
@@ -115,7 +92,7 @@ const pyocdNightly : Downloadable = new Downloadable(
         // Here, reference is expected to be the name of the workflow yaml file without file ending
         const { repo, owner, reference } = splitGitReference(workflow, 'pyocd', 'pyOCD');
         const assetPattern = (`pyocd-${os}${arch}-\\d+\\.\\d+\\.\\d+.*`);
-        const asset = new ExtractZipGitHubWorkflowAsset(
+        const asset = new GitHubWorkflowAsset(
             owner, repo, `${reference}.yaml`,
             assetPattern, 
             { token: process.env.GITHUB_TOKEN });
@@ -123,34 +100,25 @@ const pyocdNightly : Downloadable = new Downloadable(
     },
 )
 
-class GDBArchiveFileAsset extends ArchiveFileAsset {
-    public async copyTo(dest?: string) {
-        dest = await super.copyTo(dest);
-        // Remove doc directory as it contains duplicate files (names differ only in case)
-        // which are not supported by ZIP (VSIX) archives
-        await fs.rm(path.join(dest, 'share', 'doc'), { recursive: true, force: true });
-        return dest;
-    }
-}
-
 const gdb : Downloadable = new Downloadable(
     'GNU Debugger for Arm', 'gdb',
-    async (target) => {
-        const { build, ext, strip }  = {
+    async (target: DownloadTarget) => {
+        const gdbTargets = {
             'win32-x64': { build: 'mingw-w64-x86_64', ext: 'zip', strip: 0 },
             'win32-arm64': { build: 'mingw-w64-x86_64', ext: 'zip', strip: 0 },
             'linux-x64': { build: 'x86_64', ext: 'tar.xz', strip: 1 },
             'linux-arm64': { build: 'aarch64', ext: 'tar.xz', strip: 1 },
             'darwin-x64': { build: 'darwin-arm64', ext: 'tar.xz', strip: 1 },
             'darwin-arm64': { build: 'darwin-arm64', ext: 'tar.xz', strip: 1 },
-        }[target];
+        } satisfies Record<DownloadTarget, { build: string, ext: string, strip: number }>;
+        const { build, ext, strip } = gdbTargets[target];
     
         const json = await downloader.getPackageJson<CmsisPackageJson>();
         const version = json?.cmsis?.gdb;
         const asset_name = `arm-gnu-toolchain-${build}-arm-none-eabi-gdb.${ext}`;
         const url = new URL(`https://artifacts.tools.arm.com/arm-none-eabi-gdb/${version}/${asset_name}`);
         const dlAsset = new WebFileAsset(url, asset_name, version);
-        const asset = new GDBArchiveFileAsset(dlAsset, strip);
+        const asset = new ArchiveFileAsset(dlAsset, strip);
         return asset;
     },
 );
