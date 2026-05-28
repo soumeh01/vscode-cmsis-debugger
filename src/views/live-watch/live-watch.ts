@@ -16,7 +16,7 @@
 
 import * as vscode from 'vscode';
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { GDBTargetDebugSession, GDBTargetDebugTracker } from '../../debug-session';
+import { GDBTargetDebugSession, GDBTargetDebugTracker, SessionEvent } from '../../debug-session';
 import { vscodeViewExists } from '../../vscode-utils';
 import { logger } from '../..';
 
@@ -103,11 +103,12 @@ export class LiveWatchTreeDataProvider implements vscode.TreeDataProvider<LiveWa
         const onDidChangeActiveDebugSession = tracker.onDidChangeActiveDebugSession(async (session) => await this.handleOnDidChangeActiveDebugSession(session));
         const onWillStartSession =  tracker.onWillStartSession(async (session) => await this.handleOnWillStartSession(session));
         // Using this event because this is when the threadId is available for evaluations
-        const onStackTrace = tracker.onDidChangeActiveStackItem(async (item) => {
+        const onStackItem = tracker.onDidChangeActiveStackItem(async (item) => {
             if ((item.item as vscode.DebugStackFrame).frameId !== undefined) {
                 await this.refresh();
             }
         });
+        const onStackTrace = tracker.onStackTrace(async () => await this.refresh());
         // Clearing active session on closing the session
         const onWillStopSession = tracker.onWillStopSession(async (session) => {
             if (this.activeSession?.session.id && this.activeSession?.session.id === session.session.id) {
@@ -115,6 +116,12 @@ export class LiveWatchTreeDataProvider implements vscode.TreeDataProvider<LiveWa
             }
             await this.refresh();
             await this.save();
+        });
+        const onMemory = tracker.onMemory(async (event) => {
+            await this.handleOnMemoryEvent(event);
+        });
+        const onInvalidated = tracker.onInvalidated(async (event) => {
+            await this.handleOnInvalidated(event);
         });
         const onContinued = tracker.onContinued(async (event) => {
             await this.handleOnContinued(event.session);
@@ -125,8 +132,11 @@ export class LiveWatchTreeDataProvider implements vscode.TreeDataProvider<LiveWa
         this._context.subscriptions.push(
             onDidChangeActiveDebugSession,
             onWillStartSession,
+            onStackItem,
             onStackTrace,
             onWillStopSession,
+            onMemory,
+            onInvalidated,
             onContinued,
             onStopped);
         return true;
@@ -149,6 +159,13 @@ export class LiveWatchTreeDataProvider implements vscode.TreeDataProvider<LiveWa
         });
     }
 
+    private async handleOnMemoryEvent(event: SessionEvent<DebugProtocol.MemoryEvent>): Promise<void> {
+        const gdbTargetSession = event.session;
+        if (this._activeSession?.session.id !== gdbTargetSession.session.id) {
+            return;
+        }
+        await this.refresh();
+    }
     private async handleOnContinued(session: GDBTargetDebugSession): Promise<void> {
         if (this._activeSession?.session.id != session.session.id) {
             return;
@@ -161,6 +178,14 @@ export class LiveWatchTreeDataProvider implements vscode.TreeDataProvider<LiveWa
             return;
         }
         await this._activeSession.setSetExpressionSupportedContext();
+    }
+
+    private async handleOnInvalidated(event: SessionEvent<DebugProtocol.InvalidatedEvent>): Promise<void> {
+        const gdbTargetSession = event.session;
+        if (this._activeSession?.session.id !== gdbTargetSession.session.id) {
+            return;
+        }
+        await this.refresh();
     }
 
     private async addVSCodeCommands(): Promise<boolean> {
